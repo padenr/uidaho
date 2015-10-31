@@ -1,0 +1,19 @@
+#Paden Rumsey
+
+procedure main()
+    every k:= GenerateWords("This is a string") do {
+    write(k)
+}
+end
+
+procedure GenerateWords(s)
+    alnum := &letters
+    s ? {
+	while tab(upto(alnum)) do {
+	    while word := tab(any(alnum))
+	    {
+		suspend word
+	    }
+	}
+    }
+end 

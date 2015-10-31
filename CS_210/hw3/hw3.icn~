@@ -1,0 +1,44 @@
+# Paden Rumsey     CS210
+# hw3              10/06/15
+
+
+procedure main(argv)
+    dictionary := StoreDict()                            ## get the table with stored dict
+    doubleWords := table(0)                              ## declare new table
+    f := open(argv[1]) | stop("File could not open")     ## open file. if it doesn't open register error and stop program
+    homeworkSet := &letters ++ &digits ++ '-\''          ## declare new cset
+    while line := read(f) do line ?                      ## read from file and scan line
+	while tab(upto(homeworkSet)) do {                ## tab up to the next word
+	    word := tab(many(homeworkSet))          ## grab the next word
+	    word ? {                                     ## analyze string
+		c:= move(1)                              ## grab first char
+		while c2 := move(1) do                   ## grab secon char
+		    if c2 == c then {                    ## if equal then its a double lettered word
+			doubleWords[word] +:= 1          ## store in another table
+			break
+		    }
+		    else c := c2                         ## char equals next char
+	    }
+	}
+    L := []                                              ## declare new list
+    every k := key(doubleWords) do {                     ## push keys from has onto list
+	push(L, k)
+    }
+    
+    L := sort(L)                                         ## sort list
+
+    every doubleWord := !L do {                               ## for every key in the list use that key on the table check to see
+	if dictionary[map(doubleWord)] >= 1 then                   ## if the the original dictionary has it in there. If it does exist it will be 1
+	write(doubleWord, " ", doubleWords[doubleWord])   ## if it does exist then print it. Else print out the word and the value with the asterisk
+	else
+	    write(doubleWord, " ", doubleWords[doubleWord], " ",  "*")
+    }
+    
+end
+
+procedure StoreDict()
+    f:=open("/usr/share/dict/words" | "/usr/dict/words")    ##open first file. If first file doesn't exist use second    
+    dict:=table(0)                                          ##declare new table
+    while line:=read(f) do dict[map(line)] +:= 1            ##read dictionary file and store in file. Equate value to one so you can check the 1 in the main
+    return dict                                             ##return the table
+end

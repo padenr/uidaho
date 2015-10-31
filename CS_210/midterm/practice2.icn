@@ -1,0 +1,6 @@
+procedure main()
+    stringz := "this is a string"
+    vowels := 'aeiou'
+    stringz := map(stringz, 'a', '0')
+    write(stringz)
+end 
