@@ -1,0 +1,279 @@
+(setq Health 30)
+(setq AIHealth 30)
+(setq maxEnergy 0)
+
+(setq Hand '(
+	     (1 nil "C slug" 0 1)
+	     (1 nil "int" 1 1)
+	     (1 t "++" 0 1)
+	     (1 t "^=" 4 0)
+	     (2 nil "for (;;)" 2 2)
+	     (3 nil "switch" 3 3)
+	     (4 nil "array a[100]" 4 4)
+	     (4 t "Bus Error Fireball" 6 0)
+	     ))
+
+(setq AIHand '(
+	     (1 t "Atom" 0 1)
+	     (1 t "Car" 1 0)
+	     (1 t "Cdr" 2 0)
+	     (1 nil "Parenthesis" 1 1)
+	     (2 nil "Cons Cell" 2 1)
+	     (2 nil "defun" 3 2)
+	     (3 t "Mapcar" 4 0)
+	     (4 nil "Lisp Monster" 2 6)
+            ))
+
+(setq pCardsOnBoard nil)
+(setq aiCardsOnBoard nil)
+(setq highestEnergy 0)
+(setq AINextCard nil)
+
+(defun MainLoop ()
+  (loop
+   (setq maxEnergy (+ maxEnergy 1))
+   (setq playerEnergy maxEnergy)
+   (setq AIEnergy maxEnergy)
+   (setq userChoice (PlayerLoop))
+   (cond
+     ((equal userChoice "Quit")(return-from MainLoop "Player ended game"))
+     ((equal userChoice "End")
+      (format t "Player ended turn ~%"))
+     )
+    (Transfer justOnBoard "pCardsOnBoard")
+    (setq justOnBoard nil)
+    (PrintGameState)
+    (AIloop)
+    (Transfer justOnBoard "aiCardsOnBoard")
+    (setq justOnBoard nil)
+    (PrintGameState)))
+
+(defun Transfer (transferredFrom transferredTo)
+  (if (null transferredFrom) (return-from Transfer nil))
+  (if (equal transferredTo "pCardsOnBoard") (setq pCardsOnBoard (AddtoList (car transferredFrom) Hand))
+    (setq aiCardsOnBoard (AddtoList (car transferredFrom) AIHand)))
+  (Transfer (cdr transferredFrom) transferredTo))
+  
+
+(defun AIloop()
+  (MonsterAttacks aiCardsOnBoard)
+  (AIPlayCards)
+  )
+
+(defun MonsterAttacks (L)
+  (if (null L) (return-from MonsterAttacks)
+    (progn
+      (setq playerNum  (CountCards Hand))
+      (setq randomChoice (random (1+ playerNum)))
+      (AttackPlayer (car L) randomChoice)
+      (MonsterAttacks (cdr L)))))
+
+(defun AttackPlayer (attacking choice)
+  (if (>= choice (CountCards Hand))
+      (progn
+	(format t "The AI attacks the player directly ~% ~%" )
+	(setq Health (- Health (nth 3 attacking))))
+    (progn
+      (format t "The AI attacks ~a with ~b ~% ~%" (nth 2 (nth choice Hand)) (nth 2 attacking))
+      (ExecuteAttack (nth choice Hand) attacking Hand "Hand"))))
+
+(defun AIPlayCards ()
+  (loop
+   (if (= (FindHighestEnergy AIHand) 0) (return-from AIPlayCards)
+     (progn
+       (setq cardAIPlays AINextCard)
+       (setq AIEnergy (- AIEnergy (nth 0 cardAIPlays)))
+       (setq AIHand (DeletefromList cardAIPlays AIHand))
+       (if (equal (nth 1 cardAIPlays) t)
+	   (if (> (nth 3 cardAIPlays) 0)
+	       (progn
+		 (setq randomChoice (random (1+ (CountCards Hand))))
+		 (AttackPlayer cardAIPlays randomChoice))
+	     (AIHeal (nth 5 cardAIPlays) cardAIPlays))
+	 (setq justOnBoard (AddtoList cardAIPlays justOnBoard)))))
+   (setq highestenergy 0)))
+
+(defun AIHeal (healValue healCard)
+  (setq cardAmount (CountCards aiCardsOnBoard))
+  (setq randomchoice (random cardAmount))
+  (if (equal randomchoice cardAmount)
+      (progn
+	(print "Ai healed itself")
+	(setq AIHealth (+ AIHealth healValue)))
+    (ReplaceHealedAI healValue (nth randomchoice aiCardsOnBoard))))
+
+(defun ReplaceHealedAI (healValue cardToReplace)
+  (setq aiCardsOnBoard (DeletefromList cardToReplace aiCardsOnBoard))
+  (setf (nth 4 cardToReplace) (+ (nth 4 cardToReplace) healValue))
+  (setq aiCardsOnBoard (AddtoList cardToReplace aiCardsOnBoard)))
+    
+(defun FindHighestEnergy (L)
+  (if (null L) (return-from FindHighestEnergy highestenergy)
+    (if (<= (nth 0 (car L)) AIEnergy)
+	(if (> (nth 0 (car L)) highestEnergy)
+	    (progn
+	      (print "it's being set")
+	      (setq AINextCard (car L))
+	      (setq highestEnergy (nth 0 (car L))))
+	  (FindHighestEnergy (cdr L)))
+      (FindHighestEnergy (cdr L)))))
+	
+
+(defun CountCards (L)
+  (if (null L) (return-from CountCards 0)
+      (if (equal (listp (car L)) t)
+	  (1+ (CountCards (cdr L))))))
+
+	
+(defun PlayerLoop ()
+  (loop
+	(format nil "What action would you like to take? ~% ~a ~% ~b ~% ~c ~% ~d ~%" "Quit" "End" "Play \(card\)" "Attack \(name\) with \(name\)")
+	(setq x (read-line))
+	(cond
+	 ((eq x "Quit")   (return-from playerloop "Quit"))
+	 ((eq x "End" )   (return-from playerloop "End"))
+	 ((eq x "Play")
+	  (progn
+	    (format t "Who would you like to play?")
+	    (PrintHand Hand)
+	    (setq play (read-line))
+	    (PlayCard y Hand)))  
+	 ((eq x "Attack")
+	  (progn
+	    (format t "Who would you like to attack with? ~%")
+	    (PrintHand Hand)
+	    (read attacker (read-line))
+	    (format t "Who would you like to attack? ~%")
+	    (PrintHand aiCardsonBoard)
+	    (read attacked (read-line))
+	    (Attack attacked attacker Hand AIHand)
+	  )))))
+	  
+	     
+	 (eq (car action) "Attack") (playcard (cadr action) Hand)
+	
+(defun PlayCard (cardName L)
+	(if (null L) (return-from PlayCard  "Card not found in playable hand. Did you spell them correctly? Did you just place the card this turn?"))
+		(if (equal (IsCard cardName (car L)) t) 
+			(progn	
+			  (if (<= (caar L) playerenergy)
+			      (if (equal (cadar L) t)
+				  (if (> (nth 4 L) 0)
+				      (progn
+					(format t "Heal Card. Who would you like to heal? ~%")
+					(PrintHand pCardsOnBoard)
+					(setq toBeHealed (read-line)
+					(setq cost (nth 0 L)
+					(setq Hand (DeletefromList cardName Hand))
+					(Heal (nth 5 L) toBeHealed pCardsOnBoard ))
+				  (progn
+				    (format t "Offensive Spell Card. Who would you like to attack? ~%")
+				    (PrintHand aiCardsOnBoard)
+				    (setq attacked (read))
+				    (setq Hand (DeletefromList card Hand)) 
+				    (Attack attacked card Hand AIHand))
+				(PlaceCard (car L) Hand JustOnBoard))
+			    (return-from PlayCard "You do not have enough energy for that")))
+			    (PlayCard cardName (cdr L)))))))
+
+(defun Heal (healAmount toBeHealed minionList)
+  (if (equal toBeHealed "Player")
+      (setq Health (+ Health healAmount)))
+  (if (null minionList) (return-from Heal "Healing target does not exist. Did you spell it correctly?")
+    (if (equal (IsCard toBeHealed (car minionList)) t)
+        (ReplaceHealedPlayer healAmount (car minionList))
+      (Heal healAmount toBeHealed (cdr minionList)))))
+
+  
+  (defun ReplaceHealedPlayer (healValue cardToReplace)
+    (setq aiCardsOnBoard (DeletefromList cardToReplace aiCardsOnBoard))
+    (setf (nth 4 cardToReplace) (+ (nth 4 cardToReplace) healValue))
+    (setq aiCardsOnBoard (AddtoList cardToReplace aiCardsOnBoard)))
+		    
+
+(defun PrintHand(L)
+  (if (null L) (format nil "End of Player Cards ~% ~%")
+    (progn
+      (print (caddar L))
+      (PrintHand (cdr L)))))
+		  
+
+
+(defun Attack (attacked attacker attackingHand attackedHand)
+  (if (null attackingHand) (return-from Attack  "The attacking card does not exist. Did you spell it correctly? Did you just play it this turn?")
+    (if (equal (IsCard attacker (car attackingHand)) t)
+      (if (null attackedhand) (return-from Attack "The card you want to attack does not exist. Did you spell it correctly?")
+	(if (equal (IsCard attacked (car attackedHand)) t)
+	    (ExecuteAttack (car attackedHand) (car attackingHand) AIHand "AIHand")
+	  (Attack attacked attacker attackingHand (cdr attackedhand))))
+	(Attack attacked attacker (cdr attackingHand) attackedHand))))
+  
+
+(defun ExecuteAttack (attacked attacker attackedHand whichGlobal)
+  (setq newValue (- (nth 4 attacked) (nth 3 attacker)))
+  (setq attackedHand (DeletefromList attacked attackedHand))
+  (setf (nth 4 attacked) newValue)
+  (if (<= (nth 4 attacked) 0)
+      (format t "The monster/minion ~a was destroyed" (nth 2 attacked))
+     (setq attackedHand (AddtoList attacked attackedHand)))
+  (if (equal whichGlobal "Hand")
+	(progn
+    	  (setq Hand attackedHand))
+    (progn
+      (setq AIHand attackedHand))))
+
+
+(defun AttackedExists(attacked L)
+  (if (null L) (return-from AttackedExists "The card you want to attack does not exist. Did you spell it correctly?")
+    (if (equal (IsCard attacked (car L)) t) car L
+      (AttackedExists attacked (cdr L)))))
+
+(defun PrintGameState ()
+  (format nil "Current Enemy Health:           ~a" AIHealth)
+  (format nil "Current Enemy Energy:           ~a" AIEnergy)
+  (format nil "Enemy cards on the board:       ~a" aiCardsOnBoard)
+  (format nil "Player Health:                  ~a" Health)
+  (format nil "Player Energy:                  ~a" playerEnergy) 
+  (format nil "Player cards on the board:      ~a" pCardsOnBoard)
+  (format nil "Cards you can use this turn:    ~a" pCardsOnBoard)
+  (format nil "Player cards in hand:           ~a" Hand)
+  )
+
+  
+			
+(defun IsCard (card L)
+	(if (null L) nil
+	(if (equal (car L) card) (return-from IsCard t)
+		(IsCard card (cdr L) ))))
+		
+(defun PlaceCard (card inHand onBoard)
+  (setq playerEnergy (- playerEnergy (car card))
+  (setq Hand (DeletefromList card inHand))
+  (setq justOnBoard (AddtoList card justOnBoard))
+  )
+		
+(defun AddtoList (card hand)
+	(if (null hand) (return-from AddtoList (cons card nil)))
+	(cons (car hand) (AddtoList card (cdr hand))))
+
+(defun DeletefromList (card hand)
+  (if (null hand) nil
+    (if (equal card (car hand))
+	(if (equal (cadr hand) nil) nil
+	  (cons (cadr hand) (DeletefromList card (cddr hand))))
+      (cons (car hand) (DeletefromList card (cdr hand))))))
+	
+	
+;;https://gist.github.com/siguremon/1174988 - GitHub, September-10-2015
+	
+(defun split-str (string &optional (separator " "))
+  (split-str-1 string separator))
+
+(defun split-str-1 (string &optional (separator " ") (r nil))
+  (let ((n (position separator string
+		     :from-end t
+		     :test #'(lambda (x y)
+			       (find y x :test #'string=)))))
+    (if n
+	(split-str-1 (subseq string 0 n) separator (cons (subseq string (1+ n)) r))
+      (cons string r))))

@@ -1,0 +1,29 @@
+version	U12.1.00
+uid	h.u1-1445455103-0
+impl	local
+global	1
+	0,000005,main,0
+^L
+proc main
+	local	0,000000,write
+	con	0,004000,3.1415
+	declend
+	filen	h.icn
+	line	1
+	colm	11
+	synt	any
+	mark	L1
+	var	0
+	real	0
+	line	2
+	colm	9
+	synt	any
+	invoke	1
+	unmark
+lab L1
+	pnull
+	line	3
+	colm	1
+	synt	any
+	pfail
+	end
