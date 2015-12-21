@@ -1,0 +1,113 @@
+/* 
+   Paden Rumsey       CS270
+   hw7                server.c
+*/ 
+
+/****************** SERVER CODE ****************/
+
+/* the program is all but done it accounts for all games except
+   for the first one because I cannot account the weird string
+   1 player 2 wins!▒f I do not know what that thing is but I'm 
+   sure I will figure it out in the future /* other than that
+   it works perfectly */ 
+
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(){
+  int welcomeSocket, newSocket;
+  char buffer[1000];
+  struct sockaddr_in serverAddr;
+  struct sockaddr_storage serverStorage;
+  socklen_t addr_size;
+  char input[1000];
+  int gamenumber = 1; 
+  char player_win[1000];
+  char comp_win[1000];
+  char tie[1000]; 
+
+  /*---- Create the socket. The three arguments are: ----*/
+  /* 1) Internet domain 2) Stream socket 3) Default protocol (TCP in this case) */
+  welcomeSocket = socket(PF_INET, SOCK_STREAM, 0);
+  
+  /*---- Configure settings of the server address struct ----*/
+  /* Address family = Internet */
+  serverAddr.sin_family = AF_INET;
+  /* Set port number, using htons function to use proper byte order */
+  serverAddr.sin_port = htons(4501);
+  /* Set IP address to localhost */
+  serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  /* Set all bits of the padding field to 0 */
+  memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
+
+  /*---- Bind the address struct to the socket ----*/
+  bind(welcomeSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+
+  /*---- Listen on the socket, with 5 max connection requests queued ----*/
+  if(listen(welcomeSocket,5)==0)
+    printf("Listening\n");
+  else
+    printf("Error\n");
+  
+  int read_size; 
+  int ties = 0; 
+  int player_wins = 0; 
+  int comp_wins = 0; 
+  char str_player[1000];
+  char str_comp[1000]; 
+  char str_tie[1000];
+
+  /*---- Accept call creates a new socket for the incoming connection ----*/
+  addr_size = sizeof serverStorage;
+  newSocket = accept(welcomeSocket, (struct sockaddr *) &serverStorage, &addr_size); 
+  /*---- Send message to the socket of the incoming connection ----*/
+  
+  do
+    {
+ 
+      strcat(player_win, "player 1 wins!");
+      strcat(comp_win, "player 2 wins!");
+      strcat(tie,"is a tie!");
+
+      sprintf(str_player, "%d", gamenumber); 
+      sprintf(str_comp, "%d", gamenumber); 
+      sprintf(str_tie, "%d", gamenumber); 
+      strcat(str_player, " ");
+      strcat(str_comp, " "); 
+      strcat(str_tie, " "); 
+      strcat(str_player, player_win);
+      strcat(str_comp, comp_win); 
+      strcat(str_tie, tie); 
+      
+      memset((input),0,strlen(input));
+      read_size = (recv(newSocket , input , 2000 , 0));      
+
+      if(strcmp(str_player, input) == 0)
+	player_wins++; 
+      if(strcmp(str_comp, input) == 0)
+	comp_wins++; 
+      if(strcmp(str_tie, input) == 0)
+	ties++; 
+      //Send the message back to client
+      // write(newSocket , input , strlen(input));
+      
+      gamenumber++;
+       memset((str_player),0,strlen(str_player)); 
+      memset((str_comp),0,strlen(str_comp));
+      memset((str_tie),0,strlen(str_tie));
+      memset((player_win),0,strlen(player_win)); 
+      memset((comp_win),0,strlen(comp_win)); 
+      memset((tie),0,strlen(tie)); 
+         
+    }while(strcmp(input, "quit") != 0); 
+  
+  printf("Player wins %d\n", player_wins); 
+  printf("Comp wins %d\n", comp_wins); 
+  printf("Ties %d\n", ties); 
+
+  return 0;
+}
