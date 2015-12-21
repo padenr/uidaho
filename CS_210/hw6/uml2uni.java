@@ -1,0 +1,22 @@
+import java.io.*; 
+
+class uml2uni{
+    public static void main(String []args)
+    {
+
+
+
+
+    }
+
+    public void line_reader()
+    {
+	/*	try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+	       	String line;
+		while ((line = br.readLine()) != null) {
+		    // process the line.
+		}
+		}	*/ 
+    }
+
+}
