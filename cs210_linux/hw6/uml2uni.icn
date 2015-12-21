@@ -1,0 +1,79 @@
+class Item(name, description, itemLevel, playerLevelRequirement)
+
+   method acquire()
+   end
+   method sell()
+   end
+   method buy()
+   end
+   method trade()
+   end
+
+end
+
+class Player(Inventory_0)
+
+   initially
+   Inventory_0 := Inventory_0()
+   end
+
+end
+
+class Weapon : Item(damage, durability, ammoNecessary, ammo)
+
+   method upgrade()
+   end
+   method reloadAmmo()
+   end
+
+end
+
+class Material(materialType, toolRequired, toolNeeded)
+
+
+end
+
+class SupportItems : Item(type)
+
+   method use()
+   end
+
+end
+
+class WorkProject : Item(percentComplete)
+
+   method turnInProject()
+   end
+   method workOnProject()
+   end
+   method abandonProject()
+   end
+
+end
+
+class Inventory(maxItems, Item_1)
+
+   method selectItem()
+   end
+   method moveItem()
+   end
+   method equipItem()
+   end
+   method removeItem()
+   end
+   method link_Item_0(x)
+      Item_1 := x
+   end
+
+end
+
+class CraftedItem(otherRequiredMaterials, requiredTools, skillNecessary, requiredSkill, Material_2)
+
+   method create()
+   end
+   initially
+   Material_2 := Material_2()
+   end
+
+end
+

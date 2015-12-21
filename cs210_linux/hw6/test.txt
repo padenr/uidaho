@@ -1,0 +1,76 @@
+@startuml
+title Equipment
+hide circles
+
+legend left
+	Authored: Zbigniew Kissinger
+	Reviewed: Ronald Reagan
+
+	External Classes: Player
+
+endlegend
+class Player <<external>>
+
+class Inventory {
+selectItem()
+moveItem()
+equipItem()
+removeItem()
+maxItems : integer
+}
+
+class Item{
+acquire()
+sell()
+buy()
+trade()
+name : String
+description : String
+itemLevel : int
+playerLevelRequirement : int
+}
+
+class Weapon{
+upgrade()
+reloadAmmo()
+damage : int
+durability : int
+ammoNecessary : boolean
+ammo : int
+}
+
+class WorkProject{
+turnInProject()
+workOnProject()
+abandonProject()
+percentComplete : integer
+}
+
+
+class SupportItems{
+type : String
+use()
+}
+
+class CraftedItem{
+create()
+otherRequiredMaterials : List
+requiredTools : List
+skillNecessary : boolean
+requiredSkill : String
+}
+
+class Material{
+materialType : String
+toolRequired : boolean
+toolNeeded : String
+}
+
+Player "0..1" *-- "1..1" Inventory
+Inventory o-- "0.." Item
+Item <|-- Weapon
+Item <|-- WorkProject
+Item <|-- SupportItems
+Item  <|-right- CraftedItem
+Item <|-down- Material
+CraftedItem "0..1" *-- "2.." Material

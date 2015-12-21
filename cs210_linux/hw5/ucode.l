@@ -2,29 +2,47 @@
 /* Paden Rumsey      CS_210
 hw4.l             10/30/15
 */
-#include "hw4.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "ucode.tab.h"
 int linenumber = 1;
-extern char *yyfilename; 
+extern char *yyfilename;
 %}
 
 %%
 [ \t\r]
+
+"case"                                         {return synt_stmt;}
+"endcase"                                      {return synt_stmt;}
+"if"                                           {return synt_stmt;}
+"endif"                                        {return synt_stmt;}
+"ifelse"                                       {return synt_stmt;}
+"endifelse"                                    {return synt_stmt;}
+"while"                                        {return synt_stmt;}
+"endwhile"                                     {return synt_stmt;}
+"every"                                        {return synt_stmt;}
+"endevery"                                     {return synt_stmt;}
+"until"                                        {return synt_stmt;}
+"enduntil"                                     {return synt_stmt;}
+"repeat"                                       {return synt_stmt;}
+"endrepeat"                                    {return synt_stmt;}
+"suspend"                                      {return synt_stmt;}
+"endsuspend"                                   {return synt_stmt;}
 "version"                                      {return Op_Version;}
 U[0-9]*\.[0-9]*\.[0-9]*                        {return VERSIONSTAMP;}
 [A-Za-z0-9\-\.:\\/]*[A-Za-z0-9]*-[0-9]*-[0-9]* {return UCODESTAMP;}
 ,                                              {return COMMA;}
 #.*
-\-*[0-9]*\.[0-9]*                              {return REALCONST;}
-0                                              {return OCTCONST;}
-0[0-7]+                                        {return OCTCONST;}
-[1-9]{1}[0-9]*                                 {return DECCONST;}
-"lab"                                          {return Op_Lab;}
-L[0-9]                                         {return LABEL;}
-^L+                                            {printf("%s", yytext); return CONTROL_L;}
 [A-Za-z0-9\-\.:\\/]*\.icn                      {return FILENAME;}
-"any"                                          {return IDENTIFIER;}
+[A-Za-z0-9\-\.:\\/]*\.u                        {return FILENAME;}
+\-?[0-9]*\.[0-9]*                              {return REALCONST;}
+0                                              {return DECCONST;}
+\-?0[0-7]+                                        {return OCTCONST;}
+\-?[1-9]{1}[0-9]*                                 {return DECCONST;}
+"lab"                                          {return Op_Lab;}
+L+[0-9]+                                         {return LABEL;}
+"^L"+                                          {return CONTROL_L;}
+"any"                                          {return synt_stmt;}
 "asgn"                                         {return Op_Asgn;}
 "bang"                                         {return Op_Bang;}
 "cat"                                          {return Op_Cat;}
@@ -59,12 +77,12 @@ L[0-9]                                         {return LABEL;}
 "random"                                       {return Op_Random;}
 "rasgn"                                        {return Op_Rasgn;}
 "rcv"                                          {return Op_Rcv;}
-"rcvbk"                                        {return Op_RcvBk;}
+"rcvbk"                                        {return Op_Rcvbk;}
 "refresh"                                      {return Op_Refresh;}
 "rswap"                                        {return Op_Rswap;}
 "sect"                                         {return Op_Sect;}
 "snd"                                          {return Op_Snd;}
-"sndbk"                                        {return Op_SndBk;}
+"sndbk"                                        {return Op_Sndbk;}
 "size"                                         {return Op_Size;}
 "subsc"                                        {return Op_Subsc;}
 "swap"                                         {return Op_Swap;}
@@ -82,7 +100,7 @@ L[0-9]                                         {return LABEL;}
 "cset"                                         {return Op_Cset;}
 "dup"                                          {return Op_Dup;}
 "efail"                                        {return Op_Efail;}
-"einit"                                        {return Op_EInit;}
+"einit"                                        {return Op_Einit;}
 "eret"                                         {return Op_Eret;}
 "escan"                                        {return Op_Escan;}
 "esusp"                                        {return Op_Esusp;}
@@ -141,7 +159,10 @@ L[0-9]                                         {return LABEL;}
 "synt"                                         {return Op_Synt;}
 "uid"                                          {return Op_Uid;}
 \x0C                                           {yytext="^L"; return CONTROL_L;}
-[A-Za-z]+[A-Za-z0-9_]*                         {return IDENTIFIER;}
+[A-Za-z_]+[A-Za-z0-9_]*                         {return IDENTIFIER;}
 \n                                             {++linenumber;}
-.                                              {printf("lex error %s:%d bad token at %s \n", yyfilename, linenumber, yytext); exit(-1);}
+.                                              {printf("lex error %s:%d bad token at %s \n",yyfilename, linenumber, yytext); exit(-1);}
 
+%%
+
+int yywrap() { return 1;}
